@@ -1,0 +1,23 @@
+# Java
+backend/target/
+backend/.mvn/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Env — never commit real secrets
+**/.env
+**/.env.local
+# keep .env.example files (they are templates, no real secrets)
+!**/.env.example
+!**/.env.local.example
+
+# IDE
+.vscode/*.log
+
+# OS
+.DS_Store
+Thumbs.db

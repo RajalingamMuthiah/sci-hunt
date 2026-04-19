@@ -1,0 +1,179 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build backend",
+			"type": "shell",
+			"command": "mvn",
+			"args": [
+				"-q",
+				"-DskipTests",
+				"-f",
+				"backend/pom.xml",
+				"compile"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build backend",
+			"type": "shell",
+			"command": "mvn",
+			"args": [
+				"-q",
+				"-DskipTests",
+				"-f",
+				"backend/pom.xml",
+				"compile"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Install frontend deps",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"frontend",
+				"install"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build backend",
+			"type": "shell",
+			"command": "mvn",
+			"args": [
+				"-q",
+				"-DskipTests",
+				"-f",
+				"backend/pom.xml",
+				"compile"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build frontend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"frontend",
+				"run",
+				"build"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "mvn compile phase2",
+			"type": "shell",
+			"command": "cd \"c:\\Program Files\\.vscode\\sci-hunt\\backend\" && mvn compile",
+			"isBackground": false,
+			"problemMatcher": [
+				"$javac"
+			],
+			"group": "build"
+		},
+		{
+			"label": "mvn compile phase2 ps",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt\\backend'; mvn compile",
+			"isBackground": false,
+			"problemMatcher": [
+				"$javac"
+			],
+			"group": "build"
+		},
+		{
+			"label": "mvn test-compile phase2",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt\\backend'; mvn test-compile",
+			"isBackground": false,
+			"problemMatcher": [
+				"$javac"
+			],
+			"group": "build"
+		},
+		{
+			"label": "mvn test-compile fix2",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt\\backend'; mvn test-compile",
+			"isBackground": false,
+			"problemMatcher": [
+				"$javac"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install tailwind",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt\\frontend'; npm install -D tailwindcss postcss autoprefixer",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "install tailwind v3",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt\\frontend'; npm install -D tailwindcss@3 postcss autoprefixer",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "install root deps",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt'; npm install",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "next build",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt\\frontend'; npx next build 2>&1 | tail -40",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "next build v2",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt\\frontend'; npx next build",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "mvn compile",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt\\backend'; mvn compile -q 2>&1; if ($LASTEXITCODE -eq 0) { Write-Host 'BUILD SUCCESS' } else { Write-Host 'BUILD FAILED' }",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Dev: Full Stack",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt'; npm run dev",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Dev: Full Stack",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start (clean)",
+			"type": "shell",
+			"command": "powershell -ExecutionPolicy Bypass -File 'c:\\Program Files\\.vscode\\sci-hunt\\start.ps1'",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Git: Init and Push",
+			"type": "shell",
+			"command": "cd 'c:\\Program Files\\.vscode\\sci-hunt'; git init; git add .; git commit -m 'feat: initial Scientis-Hunt scaffold'; git remote add origin https://github.com/RajalingamMuthiah/sci-hunt.git; git branch -M main; git push -u origin main",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

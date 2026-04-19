@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --text: #1a2538;
+  --muted: #4f5f7a;
+  --brand: #0b7a75;
+  --brand-strong: #075c58;
+  --danger: #b42318;
+  --border: #d7dfeb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  background: radial-gradient(circle at 20% 10%, #e7f4ff 0%, #f5f7fb 55%), var(--bg);
+  color: var(--text);
+}
+
+main {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 24px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 8px 30px rgba(18, 36, 65, 0.08);
+}
+
+input, button {
+  font: inherit;
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  margin-bottom: 14px;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  background: var(--brand);
+  color: #fff;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--brand-strong);
+}
+
+.error {
+  color: var(--danger);
+  margin-top: 8px;
+}
+
+.muted {
+  color: var(--muted);
+}

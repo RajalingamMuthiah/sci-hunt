@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: scientis-hunt-backend
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/scientis_hunt}
+
+server:
+  port: ${PORT:8080}
+
+app:
+  security:
+    frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
+    jwt-secret: ${JWT_SECRET:ChangeThisToAtLeast32CharactersLongForHS256!}
+    issuer: scientis-hunt
+    access-token-minutes: 15
+    refresh-token-days: 7
+    access-cookie-name: SH_ACCESS
+    refresh-cookie-name: SH_REFRESH
+    secure-cookies: ${SECURE_COOKIES:false}
+  bootstrap:
+    super-admin-email: ${BOOTSTRAP_SUPER_ADMIN_EMAIL:admin@scientishunt.local}
+    super-admin-password: ${BOOTSTRAP_SUPER_ADMIN_PASSWORD:Admin@123456}
+  mfa:
+    issuer: Scientis-Hunt
