@@ -17,7 +17,7 @@ export function useQuestions() {
       if (filters.difficulty) params.difficulty = filters.difficulty;
       if (filters.type) params.type = filters.type;
 
-      const { data } = await api.get('/api/questions', { params });
+      const { data } = await api.get('/questions', { params });
       setQuestions(data);
       return data;
     } catch (err) {
@@ -29,24 +29,24 @@ export function useQuestions() {
   }, []);
 
   const fetchById = useCallback(async (id) => {
-    const { data } = await api.get(`/api/questions/${id}`);
+    const { data } = await api.get(`/questions/${id}`);
     return data;
   }, []);
 
   const create = useCallback(async (payload) => {
-    const { data } = await api.post('/api/questions', payload);
+    const { data } = await api.post('/questions', payload);
     setQuestions((prev) => [...prev, data]);
     return data;
   }, []);
 
   const update = useCallback(async (id, payload) => {
-    const { data } = await api.put(`/api/questions/${id}`, payload);
+    const { data } = await api.put(`/questions/${id}`, payload);
     setQuestions((prev) => prev.map((q) => (q.id === id ? data : q)));
     return data;
   }, []);
 
   const remove = useCallback(async (id) => {
-    await api.delete(`/api/questions/${id}`);
+    await api.delete(`/questions/${id}`);
     setQuestions((prev) => prev.filter((q) => q.id !== id));
   }, []);
 

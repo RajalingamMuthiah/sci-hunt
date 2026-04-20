@@ -12,7 +12,7 @@ export function useSchools() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get('/api/schools');
+      const { data } = await api.get('/schools');
       setSchools(data);
       return data;
     } catch (err) {
@@ -24,19 +24,19 @@ export function useSchools() {
   }, []);
 
   const create = useCallback(async (payload) => {
-    const { data } = await api.post('/api/schools', payload);
+    const { data } = await api.post('/schools', payload);
     setSchools((prev) => [...prev, data]);
     return data;
   }, []);
 
   const update = useCallback(async (id, payload) => {
-    const { data } = await api.put(`/api/schools/${id}`, payload);
+    const { data } = await api.put(`/schools/${id}`, payload);
     setSchools((prev) => prev.map((s) => (s.id === id ? data : s)));
     return data;
   }, []);
 
   const remove = useCallback(async (id) => {
-    await api.delete(`/api/schools/${id}`);
+    await api.delete(`/schools/${id}`);
     setSchools((prev) => prev.filter((s) => s.id !== id));
   }, []);
 

@@ -1,25 +1,44 @@
 spring:
   application:
-    name: scientis-hunt-backend
+    name: scientist-hunt
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/scientis_hunt}
+      uri: mongodb+srv://arjunmudaliyar99_db_user:Arjun123@cluster1.fhzqxt1.mongodb.net/scientisthunt?appName=Cluster1
+      database: scientisthunt
+  jackson:
+    default-property-inclusion: non_null
 
 server:
-  port: ${PORT:8080}
+  port: 8080
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        secure: true
+        http-only: true
 
 app:
+  jwt:
+    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    access-expiry-ms: 900000
+    refresh-expiry-ms: 604800000
   security:
     frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
-    jwt-secret: ${JWT_SECRET:ChangeThisToAtLeast32CharactersLongForHS256!}
+    jwt-secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     issuer: scientis-hunt
     access-token-minutes: 15
     refresh-token-days: 7
     access-cookie-name: SH_ACCESS
     refresh-cookie-name: SH_REFRESH
     secure-cookies: ${SECURE_COOKIES:false}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   bootstrap:
     super-admin-email: ${BOOTSTRAP_SUPER_ADMIN_EMAIL:admin@scientishunt.local}
     super-admin-password: ${BOOTSTRAP_SUPER_ADMIN_PASSWORD:Admin@123456}
   mfa:
     issuer: Scientis-Hunt
+
+logging:
+  level:
+    com.scientisthunt: DEBUG

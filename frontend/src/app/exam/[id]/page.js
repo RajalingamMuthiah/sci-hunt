@@ -40,7 +40,7 @@ function ExamLoader() {
   const handleSubmit = useCallback(
     async (answers) => {
       try {
-        await axiosInstance.post(`/exams/${examId}/submit`, { answers });
+        await axiosInstance.post('/attempts', { examId, answers });
         router.replace('/dashboard');
       } catch {
         // submission error handled — exam shows submitted state already

@@ -1,7 +1,9 @@
 package com.scientishunt.security;
 
+import java.util.Arrays;
 import java.util.List;
 
+import com.scientishunt.config.RateLimitFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,19 +32,22 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JsonAuthenticationEntryPoint authenticationEntryPoint;
     private final JsonAccessDeniedHandler accessDeniedHandler;
+    private final RateLimitFilter rateLimitFilter;
 
-    @Value("${app.security.frontend-origin:http://localhost:3000}")
-    private String frontendOrigin;
+    @Value("${app.cors.allowed-origins:http://localhost:3000}")
+    private String allowedOrigins;
 
     public SecurityConfig(
             JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
             CustomUserDetailsService customUserDetailsService,
             JsonAuthenticationEntryPoint authenticationEntryPoint,
-            JsonAccessDeniedHandler accessDeniedHandler) {
+            JsonAccessDeniedHandler accessDeniedHandler,
+            RateLimitFilter rateLimitFilter) {
         this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
         this.customUserDetailsService = customUserDetailsService;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
@@ -55,16 +60,17 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtCookieAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh",
-                                "/api/auth/mfa/verify")
+                        .requestMatchers(HttpMethod.GET, "/auth/csrf").permitAll()
+                        .requestMatchers("/auth/login", "/auth/register", "/auth/refresh",
+                                "/auth/mfa/verify")
                         .permitAll()
-                        .requestMatchers("/api/admin/**").hasAnyRole("SUPER_ADMIN", "SCHOOL_ADMIN")
-                        .requestMatchers("/api/schools/**").hasAnyRole("SUPER_ADMIN", "SCHOOL_ADMIN")
-                        .requestMatchers("/api/teacher/**").hasAnyRole("SUPER_ADMIN", "SCHOOL_ADMIN", "TEACHER")
-                        .requestMatchers("/api/student/**")
+                        .requestMatchers("/admin/**").hasAnyRole("SUPER_ADMIN", "SCHOOL_ADMIN")
+                        .requestMatchers("/schools/**").hasAnyRole("SUPER_ADMIN", "SCHOOL_ADMIN")
+                        .requestMatchers("/teacher/**").hasAnyRole("SUPER_ADMIN", "SCHOOL_ADMIN", "TEACHER")
+                        .requestMatchers("/student/**")
                         .hasAnyRole("SUPER_ADMIN", "SCHOOL_ADMIN", "TEACHER", "STUDENT")
                         .anyRequest().authenticated());
 
@@ -74,7 +80,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(frontendOrigin));
+        config.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
         config.setAllowCredentials(true);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN", "X-Requested-With"));

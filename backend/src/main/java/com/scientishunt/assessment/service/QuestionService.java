@@ -57,20 +57,22 @@ public class QuestionService {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Question not found: " + id));
 
-        if (request.getSubject() != null)
-            question.setSubject(request.getSubject());
-        if (request.getDifficulty() != null)
-            question.setDifficulty(request.getDifficulty());
-        if (request.getType() != null)
-            question.setType(request.getType());
-        if (request.getQuestionText() != null)
-            question.setQuestionText(request.getQuestionText());
-        if (request.getOptions() != null)
-            question.setOptions(request.getOptions());
-        if (request.getCorrectAnswer() != null)
-            question.setCorrectAnswer(request.getCorrectAnswer());
-        if (request.getExplanation() != null)
-            question.setExplanation(request.getExplanation());
+        if (request.getSubject() != null) question.setSubject(request.getSubject());
+        if (request.getSubjectId() != null) question.setSubjectId(request.getSubjectId());
+        if (request.getTopicId() != null) question.setTopicId(request.getTopicId());
+        if (request.getDifficulty() != null) question.setDifficulty(request.getDifficulty());
+        if (request.getType() != null) question.setType(request.getType());
+        if (request.getGrade() != null) question.setGrade(request.getGrade());
+        if (request.getQuestionText() != null) question.setQuestionText(request.getQuestionText());
+        if (request.getQuestionImageUrl() != null) question.setQuestionImageUrl(request.getQuestionImageUrl());
+        if (request.getOptions() != null) question.setOptions(request.getOptions());
+        if (request.getCorrectAnswer() != null) question.setCorrectAnswer(request.getCorrectAnswer());
+        if (request.getCorrectBoolAnswer() != null) question.setCorrectBoolAnswer(request.getCorrectBoolAnswer());
+        if (request.getModelAnswer() != null) question.setModelAnswer(request.getModelAnswer());
+        if (request.getMaxWords() != null) question.setMaxWords(request.getMaxWords());
+        if (request.getExplanation() != null) question.setExplanation(request.getExplanation());
+        if (request.getMarks() != null) question.setMarks(request.getMarks());
+        if (request.getTags() != null) question.setTags(request.getTags());
 
         return toResponse(questionRepository.save(question), true);
     }
@@ -86,23 +88,41 @@ public class QuestionService {
         return new QuestionResponse(
                 q.getId(),
                 q.getSubject(),
+                q.getSubjectId(),
+                q.getTopicId(),
                 q.getDifficulty(),
                 q.getType(),
+                q.getGrade(),
                 q.getQuestionText(),
+                q.getQuestionImageUrl(),
                 q.getOptions(),
                 includeAnswers ? q.getCorrectAnswer() : null,
-                includeAnswers ? q.getExplanation() : null);
+                includeAnswers ? q.getCorrectBoolAnswer() : null,
+                includeAnswers ? q.getModelAnswer() : null,
+                q.getMaxWords(),
+                includeAnswers ? q.getExplanation() : null,
+                q.getMarks(),
+                q.getTags());
     }
 
     private Question fromRequest(QuestionRequest request) {
         Question q = new Question();
         q.setSubject(request.getSubject());
+        q.setSubjectId(request.getSubjectId());
+        q.setTopicId(request.getTopicId());
         q.setDifficulty(request.getDifficulty());
         q.setType(request.getType());
+        q.setGrade(request.getGrade());
         q.setQuestionText(request.getQuestionText());
+        q.setQuestionImageUrl(request.getQuestionImageUrl());
         q.setOptions(request.getOptions());
         q.setCorrectAnswer(request.getCorrectAnswer());
+        q.setCorrectBoolAnswer(request.getCorrectBoolAnswer());
+        q.setModelAnswer(request.getModelAnswer());
+        q.setMaxWords(request.getMaxWords());
         q.setExplanation(request.getExplanation());
+        q.setMarks(request.getMarks());
+        q.setTags(request.getTags());
         return q;
     }
 }

@@ -1,16 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-
-/* ─── Palette colour coding ─────────────────────────────────────────────
-   not-visited  → slate-200 bg  (grey)
-   visited      → white bg + border  (seen but blank)
-   answered     → brand green
-   flagged      → amber
-   current      → brand ring
-─────────────────────────────────────────────────────────────────────── */
+import api from '@/lib/axios';
 
 const MAX_VIOLATIONS = 3;
+const AUTO_SAVE_INTERVAL = 30000; // 30s
 
 function formatTime(secs) {
   const m = Math.floor(secs / 60).toString().padStart(2, '0');
@@ -19,23 +13,21 @@ function formatTime(secs) {
 }
 
 export default function ExamScreen({ exam, onSubmit }) {
-  const { questions = [], durationMinutes = 30, title = 'Exam' } = exam ?? {};
+  const { questions = [], duration = 30, title = 'Exam', id: examId } = exam ?? {};
   const total = questions.length;
 
-  /* ─ core state ───────────────────────────────────────────────────── */
   const [currentQ, setCurrentQ]         = useState(0);
-  const [answers,  setAnswers]          = useState({});   // { questionId: optionId }
+  const [answers,  setAnswers]          = useState({});
   const [flagged,  setFlagged]          = useState(new Set());
   const [visited,  setVisited]          = useState(new Set([0]));
-  const [timeLeft, setTimeLeft]         = useState(durationMinutes * 60);
+  const [timeLeft, setTimeLeft]         = useState(duration * 60);
   const [submitted, setSubmitted]       = useState(false);
-
-  /* ─ modal state ──────────────────────────────────────────────────── */
   const [showSubmitModal,  setShowSubmitModal]  = useState(false);
   const [tabWarning,       setTabWarning]       = useState(false);
   const [tabViolations,    setTabViolations]    = useState(0);
 
-  const timerRef = useRef(null);
+  const timerRef    = useRef(null);
+  const autoSaveRef = useRef(null);
 
   /* ─ countdown timer ──────────────────────────────────────────────── */
   useEffect(() => {
@@ -52,6 +44,23 @@ export default function ExamScreen({ exam, onSubmit }) {
     }, 1000);
     return () => clearInterval(timerRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted]);
+
+  /* ─ auto-save draft every 30s ────────────────────────────────────── */
+  useEffect(() => {
+    if (submitted || !examId) return;
+    autoSaveRef.current = setInterval(() => {
+      api.patch(`/attempts/sync`, { examId, answers, timeLeft }).catch(() => {});
+    }, AUTO_SAVE_INTERVAL);
+    return () => clearInterval(autoSaveRef.current);
+  }, [submitted, examId, answers, timeLeft]);
+
+  /* ─ beforeunload guard ───────────────────────────────────────────── */
+  useEffect(() => {
+    if (submitted) return;
+    const handler = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
   }, [submitted]);
 
   /* ─ tab-switch / window-blur detection ───────────────────────────── */
@@ -85,6 +94,10 @@ export default function ExamScreen({ exam, onSubmit }) {
     setAnswers((a) => ({ ...a, [questionId]: optionId }));
   }, []);
 
+  const setTextAnswer = useCallback((questionId, text) => {
+    setAnswers((a) => ({ ...a, [questionId]: text }));
+  }, []);
+
   const toggleFlag = useCallback((qIdx) => {
     setFlagged((f) => {
       const next = new Set(f);
@@ -95,11 +108,13 @@ export default function ExamScreen({ exam, onSubmit }) {
 
   const handleAutoSubmit = useCallback(() => {
     setSubmitted(true);
+    clearInterval(autoSaveRef.current);
     onSubmit?.(answers);
   }, [answers, onSubmit]);
 
   const handleConfirmSubmit = useCallback(() => {
     clearInterval(timerRef.current);
+    clearInterval(autoSaveRef.current);
     setSubmitted(true);
     setShowSubmitModal(false);
     onSubmit?.(answers);
@@ -119,7 +134,6 @@ export default function ExamScreen({ exam, onSubmit }) {
     return 'bg-slate-200 text-slate-500';
   };
 
-  /* ─ timer colour ─────────────────────────────────────────────────── */
   const timerColor = timeLeft <= 60
     ? 'bg-red-50 text-red-600 border-red-200'
     : timeLeft <= 300
@@ -228,44 +242,97 @@ export default function ExamScreen({ exam, onSubmit }) {
             {q ? (
               <div className="mx-auto max-w-2xl">
                 {/* Question header */}
-                <div className="mb-6 flex items-start gap-3">
+                <div className="mb-2 flex items-start gap-3">
                   <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand">
                     {currentQ + 1}
                   </span>
-                  <p className="text-base font-medium leading-relaxed text-slate-900">{q.text}</p>
+                  <p className="text-base font-medium leading-relaxed text-slate-900">{q.questionText}</p>
                 </div>
 
+                {/* Question image */}
+                {q.questionImageUrl && (
+                  <div className="mb-4 ml-10">
+                    <img src={q.questionImageUrl} alt="Question" className="max-h-56 rounded-lg border border-slate-200" />
+                  </div>
+                )}
+
+                {/* Marks badge */}
+                {q.marks != null && (
+                  <p className="mb-4 ml-10 text-xs text-slate-400">[{q.marks} mark{q.marks !== 1 ? 's' : ''}]</p>
+                )}
+
                 {/* MCQ Options */}
-                <div className="space-y-3">
-                  {q.options?.map((opt) => {
-                    const selected = answers[q.id] === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        onClick={() => selectOption(q.id, opt.id)}
-                        className={[
-                          'flex w-full items-start gap-3 rounded-xl border-2 px-4 py-3.5 text-left text-sm transition-all',
-                          selected
-                            ? 'border-brand bg-brand-light text-brand font-medium'
-                            : 'border-slate-200 bg-white text-slate-700 hover:border-brand/40 hover:bg-brand-light/50',
-                        ].join(' ')}
-                      >
-                        {/* Radio indicator */}
-                        <span
+                {q.type === 'MCQ' && (
+                  <div className="space-y-3">
+                    {q.options?.map((opt) => {
+                      const selected = answers[q.id] === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          onClick={() => selectOption(q.id, opt.id)}
                           className={[
-                            'mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
-                            selected ? 'border-brand bg-brand' : 'border-slate-300 bg-white',
+                            'flex w-full items-start gap-3 rounded-xl border-2 px-4 py-3.5 text-left text-sm transition-all',
+                            selected
+                              ? 'border-brand bg-brand-light text-brand font-medium'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-brand/40 hover:bg-brand-light/50',
                           ].join(' ')}
                         >
-                          {selected && (
-                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                          )}
-                        </span>
-                        <span>{opt.text}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                          <span
+                            className={[
+                              'mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
+                              selected ? 'border-brand bg-brand' : 'border-slate-300 bg-white',
+                            ].join(' ')}
+                          >
+                            {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                          </span>
+                          <span className="flex items-center gap-2">
+                            {opt.imageUrl && <img src={opt.imageUrl} alt="" className="h-10 w-10 rounded object-cover" />}
+                            {opt.text}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* TRUE / FALSE */}
+                {q.type === 'TRUE_FALSE' && (
+                  <div className="flex gap-4 ml-10">
+                    {['true', 'false'].map((val) => {
+                      const selected = answers[q.id] === val;
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => selectOption(q.id, val)}
+                          className={[
+                            'flex-1 rounded-xl border-2 py-4 text-center text-sm font-semibold capitalize transition-all',
+                            selected
+                              ? 'border-brand bg-brand-light text-brand'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-brand/40',
+                          ].join(' ')}
+                        >
+                          {val}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* DESCRIPTIVE */}
+                {q.type === 'DESCRIPTIVE' && (
+                  <div className="ml-10">
+                    <textarea
+                      rows={6}
+                      value={answers[q.id] ?? ''}
+                      onChange={(e) => setTextAnswer(q.id, e.target.value)}
+                      placeholder="Type your answer here…"
+                      className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-y"
+                    />
+                    {q.maxWords && (
+                      <p className="mt-1 text-xs text-slate-400">Max {q.maxWords} words</p>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex h-full items-center justify-center">

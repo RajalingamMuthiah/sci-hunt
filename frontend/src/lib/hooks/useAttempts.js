@@ -12,7 +12,7 @@ export function useAttempts() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.post('/api/attempts', { examId, answers });
+      const { data } = await api.post('/attempts', { examId, answers });
       setAttempts((prev) => [...prev, data]);
       return data;
     } catch (err) {
@@ -27,7 +27,7 @@ export function useAttempts() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get('/api/attempts/my');
+      const { data } = await api.get('/attempts/my');
       setAttempts(data);
       return data;
     } catch (err) {
@@ -39,14 +39,34 @@ export function useAttempts() {
   }, []);
 
   const fetchByExam = useCallback(async (examId) => {
-    const { data } = await api.get(`/api/attempts/exam/${examId}`);
+    const { data } = await api.get(`/attempts/exam/${examId}`);
     return data;
   }, []);
 
   const fetchMyAttemptForExam = useCallback(async (examId) => {
-    const { data } = await api.get(`/api/attempts/exam/${examId}/my`);
+    const { data } = await api.get(`/attempts/exam/${examId}/my`);
     return data;
   }, []);
 
-  return { attempts, loading, error, submit, fetchMine, fetchByExam, fetchMyAttemptForExam };
+  const fetchPendingGrading = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.get('/attempts/pending-grading');
+      setAttempts(data);
+      return data;
+    } catch (err) {
+      setError(err.response?.data?.message ?? err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const gradeDescriptive = useCallback(async (attemptId, grades) => {
+    const { data } = await api.patch(`/attempts/${attemptId}/grade-descriptive`, { grades });
+    return data;
+  }, []);
+
+  return { attempts, loading, error, submit, fetchMine, fetchByExam, fetchMyAttemptForExam, fetchPendingGrading, gradeDescriptive };
 }
