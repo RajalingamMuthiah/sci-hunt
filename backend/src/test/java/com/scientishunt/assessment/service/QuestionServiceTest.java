@@ -39,7 +39,12 @@ class QuestionServiceTest {
         question.setDifficulty("MEDIUM");
         question.setType(QuestionType.MCQ);
         question.setQuestionText("What is Newton's first law?");
-        question.setOptions(List.of("A", "B", "C", "D"));
+        question.setOptions(List.of(
+            new Question.Option("a", "A", null, true),
+            new Question.Option("b", "B", null, false),
+            new Question.Option("c", "C", null, false),
+            new Question.Option("d", "D", null, false)
+        ));
         question.setCorrectAnswer("A");
         question.setExplanation("Law of inertia");
     }
@@ -88,7 +93,7 @@ class QuestionServiceTest {
         QuestionRequest request = new QuestionRequest();
         request.setSubject("Chemistry");
         request.setDifficulty("EASY");
-        request.setType(QuestionType.TF);
+        request.setType(QuestionType.TRUE_FALSE);
         request.setQuestionText("Water is H2O?");
         request.setCorrectAnswer("TRUE");
 

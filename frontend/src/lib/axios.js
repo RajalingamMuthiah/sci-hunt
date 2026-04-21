@@ -1,12 +1,11 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL = "http://localhost:8080/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 15000,
   withCredentials: true,
-  xsrfCookieName: "XSRF-TOKEN",
-  xsrfHeaderName: "X-XSRF-TOKEN",
   headers: {
     "Content-Type": "application/json"
   }
@@ -62,17 +61,14 @@ api.interceptors.response.use(
       await axios.post(
         `${API_BASE_URL}/auth/refresh`,
         {},
-        {
-          withCredentials: true,
-          xsrfCookieName: "XSRF-TOKEN",
-          xsrfHeaderName: "X-XSRF-TOKEN"
-        }
+        { withCredentials: true }
       );
 
       flushQueue(null);
       return api(originalRequest);
     } catch (refreshError) {
       flushQueue(refreshError);
+      window.location.href = "/login";
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

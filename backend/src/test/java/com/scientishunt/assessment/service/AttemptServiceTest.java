@@ -59,7 +59,7 @@ class AttemptServiceTest {
 
         descQuestion = new Question();
         descQuestion.setId("q2");
-        descQuestion.setType(QuestionType.DESC);
+        descQuestion.setType(QuestionType.DESCRIPTIVE);
         descQuestion.setCorrectAnswer(null);
     }
 

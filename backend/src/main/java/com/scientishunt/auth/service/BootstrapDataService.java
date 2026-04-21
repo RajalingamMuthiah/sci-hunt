@@ -27,16 +27,21 @@ public class BootstrapDataService implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (userRepository.findByEmailIgnoreCase(superAdminEmail).isPresent()) {
-            return;
-        }
+        try {
+            if (userRepository.findByEmailIgnoreCase(superAdminEmail).isPresent()) {
+                return;
+            }
 
-        User admin = new User();
-        admin.setName("Super Admin");
-        admin.setEmail(superAdminEmail);
-        admin.setPassword(passwordEncoder.encode(superAdminPassword));
-        admin.setRole(Role.SUPER_ADMIN);
-        admin.setMfaEnabled(false);
-        userRepository.save(admin);
+            User admin = new User();
+            admin.setName("Super Admin");
+            admin.setEmail(superAdminEmail);
+            admin.setPassword(passwordEncoder.encode(superAdminPassword));
+            admin.setRole(Role.SUPER_ADMIN);
+            admin.setMfaEnabled(false);
+            userRepository.save(admin);
+        } catch (Exception e) {
+            System.err.println("Warning: Could not bootstrap data - MongoDB connection failed: " + e.getMessage());
+            // Continue anyway - let the app start even if bootstrap fails
+        }
     }
 }

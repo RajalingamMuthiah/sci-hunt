@@ -13,10 +13,6 @@ export function AuthProvider({ children }) {
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaChallengeToken, setMfaChallengeToken] = useState(null);
 
-  const bootstrapCsrf = useCallback(async () => {
-    await api.get("/auth/csrf");
-  }, []);
-
   const clearState = useCallback(() => {
     setUser(null);
     setIsAuthenticated(false);
@@ -32,7 +28,6 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async ({ email, password }) => {
-    await bootstrapCsrf();
     const { data } = await api.post("/auth/login", { email, password });
 
     if (data?.mfaRequired) {
@@ -54,14 +49,13 @@ export function AuthProvider({ children }) {
 
     const me = await refreshProfile();
     return { mfaRequired: false, user: me };
-  }, [bootstrapCsrf, refreshProfile]);
+  }, [refreshProfile]);
 
   const verifyMfa = useCallback(async ({ code }) => {
     if (!mfaChallengeToken) {
       throw new Error("Missing MFA challenge token");
     }
 
-    await bootstrapCsrf();
     const { data } = await api.post("/auth/mfa/verify", {
       challengeToken: mfaChallengeToken,
       code
@@ -69,46 +63,41 @@ export function AuthProvider({ children }) {
 
     setMfaRequired(false);
     setMfaChallengeToken(null);
-    setUser(data);
+    setUser(data?.user ?? data);
     setIsAuthenticated(true);
 
     return data;
-  }, [bootstrapCsrf, mfaChallengeToken]);
+  }, [mfaChallengeToken]);
 
   const setupMfa = useCallback(async () => {
-    await bootstrapCsrf();
     const { data } = await api.post("/auth/mfa/setup", {});
     return data;
-  }, [bootstrapCsrf]);
+  }, []);
 
   const enableMfa = useCallback(async ({ code }) => {
-    await bootstrapCsrf();
     const { data } = await api.post("/auth/mfa/enable", { code });
     setUser(data);
     return data;
-  }, [bootstrapCsrf]);
+  }, []);
 
   const register = useCallback(async ({ name, email, password, role }) => {
-    await bootstrapCsrf();
-    const { data } = await api.post('/auth/register', { name, email, password, role });
+    const { data } = await api.post("/auth/register", { name, email, password, role });
     return data;
-  }, [bootstrapCsrf]);
+  }, []);
 
   const logout = useCallback(async () => {
     try {
-      await bootstrapCsrf();
       await api.post("/auth/logout", {});
     } finally {
       clearState();
     }
-  }, [bootstrapCsrf, clearState]);
+  }, [clearState]);
 
   useEffect(() => {
     let active = true;
 
     const bootstrap = async () => {
       try {
-        await bootstrapCsrf();
         await refreshProfile();
       } catch (_err) {
         if (active) {
@@ -126,7 +115,7 @@ export function AuthProvider({ children }) {
     return () => {
       active = false;
     };
-  }, [bootstrapCsrf, clearState, refreshProfile]);
+  }, [clearState, refreshProfile]);
 
   const value = useMemo(() => ({
     user,
